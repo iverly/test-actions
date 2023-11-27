@@ -1,0 +1,12 @@
+on:
+  push:
+
+jobs:
+  name:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: get repository name
+        run: echo "REPOSITORY_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+      - name: echo repository name
+        run: echo $REPOSITORY_NAME
