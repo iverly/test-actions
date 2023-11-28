@@ -1,0 +1,39 @@
+name: Continuous Versioning
+
+on:
+  push:
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: "bump-version"
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: "5.x"
+
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.7
+
+      - name: Format version
+        id: formatVersion
+        run: |
+          if [ "${{ steps.gitversion.outputs.CommitsSinceVersionSource }}" = 0 ]; then
+            echo "buildVersion=${{ steps.gitversion.outputs.MajorMinorPatch }}" | tee $GITHUB_OUTPUT
+          else
+            echo "buildVersion=${{ steps.gitversion.outputs.MajorMinorPatch }}-rc${{ steps.gitversion.outputs.CommitsSinceVersionSource }}" | tee $GITHUB_OUTPUT
+          fi
+
+      - name: Echo version
+        run: |
+          echo "buildVersion=${{ steps.formatVersion.outputs.buildVersion }}"
